@@ -1,0 +1,764 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "Wordpress-Mysql",
+        "annotations": {
+            "openshift.io/display-name": "Wordpress con mysql",
+            "description": "Creamos la imagen mysql y de wordpress a partir de software collection. Después desplegamos.",
+            "tags": "wordpress,mysql",
+            "iconClass": "icon-wordpress"
+        },
+        "labels": {
+            "template": "wordpress-mysql"
+        }
+    },
+    "parameters": [
+        {
+            "name": "PROJECT_NAME",
+            "description": "The name of the WordPress instance.",
+            "value": "image-wp"
+        },
+        {
+            "name": "APPLICATION_NAME",
+            "description": "Instancia de wordpress con mysql sin persistencia.",
+            "value": "wordpress",
+            "required": true
+        },
+        {
+            "name": "SOURCE_REPOSITORY_MYSQL_URL",
+            "description": "The URL of the quickstart Git repository.",
+            "value": "https://github.com/samyunodos/mysql-container-1",
+            "required": true
+        },
+        {
+            "name": "SOURCE_REPOSITORY_MYSQL_TAG",
+            "description": "The tagged version of the source repository to use.",
+            "value": "mysql80",
+            "required": true
+        },
+        {
+            "name": "DOCKER_REGISTER",
+            "description": "The password for the database user.",
+            "value": "docker-registry.default.svc:5000"
+        },
+        {
+            "name": "DB_NAME",
+            "description": "Nombre de la base de datos (MYSQL_DATABASE).",
+            "value": "mydatabase"
+        },
+        {
+            "name": "DB_USER",
+            "description": "Usuario de la base de datos (MYSQL_USER).",
+            "value": "userdb"
+        },
+        {
+            "name": "DB_PASSWORD",
+            "description": "La contraseña del usuario para la base de datos (MYSQL_PASSWORD). Posteriormente la introudciremos como un secreto de kubernetes.",
+            "value": "passuserdb"
+        },
+        {
+            "name": "DB_ROOT_PASSWORD",
+            "description": "El password del root de msql (MYSQL_ROOT_PASSWORD).  Posteriormente la introudciremos como un secreto de kubernetes.",
+            "from": "[a-zA-Z0-9]{12}",
+            "value": "passroot"
+        },
+        {
+            "name": "DB_HOST",
+            "description": "El nombre del host dónde se encuentra la base de datos. Generalmente suele ser el nombre del servicio que expone la base de datos.",
+            "value": "wordpress-mysql"
+        },
+        {
+            "name": "DB_PORT_NUMBER",
+            "description": "El puerto para comunicarse con la base de datos.",
+            "value": "3306"
+        }
+    ],
+    "objects": [
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}-mysql-img-0",
+                "labels": {
+                    "project": "${PROJECT_NAME}",
+                    "app": "${APPLICATION_NAME}",
+                    "build": "${APPLICATION_NAME}-mysql"
+                }
+            }
+        },
+        {
+            "kind": "BuildConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}-mysql-img-0",
+                "labels": {
+                    "project": "${PROJECT_NAME}",
+                    "app": "${APPLICATION_NAME}",
+                    "build": "${APPLICATION_NAME}-mysql"
+                }
+            },
+            "spec": {
+                "failedBuildsHistoryLimit": 5,
+                "nodeSelector": null,
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "${APPLICATION_NAME}-mysql-img-0:latest"
+                    }
+                },
+                "postCommit": {},
+                "resources": {},
+                "triggers": [
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange"
+                    },
+                    {
+                        "type": "GitHub",
+                        "github": {
+                            "secretReference": {
+                                "name": "${APPLICATION_NAME}-mysql"
+                            }
+                        }
+                    }
+                ],
+                "source": {
+                    "type": "Git",
+                    "git": {
+                        "uri": "${SOURCE_REPOSITORY_MYSQL_URL}",
+                        "ref": "${SOURCE_REPOSITORY_MYSQL_TAG}"
+                    }
+                },
+                "strategy": {
+                    "type": "Docker",
+                    "dockerStrategy": {
+                        "dockerfilePath": "8.0/Dockerfile",
+                        "forcePull": true,
+                        "from": {
+                            "kind": "DockerImage",
+                            "name": "docker.io/centos/s2i-core-centos7:latest"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}-mysql-img-0-test",
+                "labels": {
+                    "app": "${APPLICATION_NAME}",
+                    "build": "${APPLICATION_NAME}-mysql-img-0-test"
+                }
+            }
+        },
+        {
+            "apiVersion": "build.openshift.io/v1",
+            "kind": "BuildConfig",
+            "metadata": {
+                "labels": {
+                    "app": "${APPLICATION_NAME}",
+                    "build": "${APPLICATION_NAME}-mysql-img-0-test"
+                },
+                "name": "${APPLICATION_NAME}-mysql-img-0-test",
+                "namespace": "${PROJECT_NAME}"
+            },
+            "spec": {
+                "failedBuildsHistoryLimit": 5,
+                "nodeSelector": null,
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "${APPLICATION_NAME}-mysql-img-0-test:latest"
+                    }
+                },
+                "postCommit": {},
+                "resources": {},
+                "runPolicy": "Serial",
+                "source": {
+                    "contextDir": "test/test-app/mysql-cfg",
+                    "git": {
+                        "ref": "mysql80",
+                        "uri": "https://github.com/samyunodos/mysql-container-1.git"
+                    },
+                    "type": "Git"
+                },
+                "type": "Source",
+                "strategy": {
+                    "sourceStrategy": {
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "namespace": "${PROJECT_NAME}",
+                            "name": "${APPLICATION_NAME}-mysql-img-0:latest"
+                        },
+                        "env": [
+                            {
+                                "name": "MYSQL_USER",
+                                "value": "${DB_USER}"
+                            },
+                            {
+                                "name": "MYSQL_PASSWORD",
+                                "value": "${DB_PASSWORD}"
+                            },
+                            {
+                                "name": "MYSQL_DATABASE",
+                                "value": "${DB_NAME}"
+                            },
+                            {
+                                "name": "MYSQL_ROOT_PASSWORD",
+                                "value": "${DB_ROOT_PASSWORD}"
+                            },
+                            {
+                                "name": "MYSQL_HOST",
+                                "value": "${DB_HOST}"
+                            },
+                            {
+                                "name": "MYSQL_PORT_NUMBER",
+                                "value": "${DB_PORT_NUMBER}"
+                            }
+                        ]
+                    }
+                },
+                "triggers": [
+                    {},
+                    {
+                        "generic": {
+                            "secret": "F-ilfroO9PAhjTRSWX67"
+                        },
+                        "type": "Generic"
+                    },
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange"
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}-mysql-img-1",
+                "labels": {
+                    "project": "${PROJECT_NAME}",
+                    "app": "${APPLICATION_NAME}",
+                    "build": "${APPLICATION_NAME}-mysql"
+                }
+            }
+        },
+        {
+            "apiVersion": "build.openshift.io/v1",
+            "kind": "BuildConfig",
+            "metadata": {
+                "labels": {
+                    "project": "${PROJECT_NAME}",
+                    "app": "${APPLICATION_NAME}",
+                    "build": "${APPLICATION_NAME}-mysql"
+                },
+                "name": "${APPLICATION_NAME}-mysql-img-1",
+                "namespace": "${PROJECT_NAME}"
+            },
+            "spec": {
+                "failedBuildsHistoryLimit": 5,
+                "nodeSelector": null,
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "${APPLICATION_NAME}-mysql-img-1:latest"
+                    }
+                },
+                "postCommit": {},
+                "resources": {},
+                "runPolicy": "Serial",
+                "source": {
+                    "contextDir": "test/test-app/mysql-cfg",
+                    "git": {
+                        "ref": "mysql80",
+                        "uri": "https://github.com/samyunodos/mysql-container-1.git"
+                    },
+                    "type": "Git"
+                },
+                "type": "Source",
+                "strategy": {
+                    "sourceStrategy": {
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "namespace": "${PROJECT_NAME}",
+                            "name": "${APPLICATION_NAME}-mysql-img-0:latest"
+                        },
+                        "env": [
+                            {
+                                "name": "MYSQL_USER",
+                                "value": "${DB_USER}"
+                            },
+                            {
+                                "name": "MYSQL_PASSWORD",
+                                "value": "${DB_PASSWORD}"
+                            },
+                            {
+                                "name": "MYSQL_DATABASE",
+                                "value": "${DB_NAME}"
+                            },
+                            {
+                                "name": "MYSQL_ROOT_PASSWORD",
+                                "value": "${DB_ROOT_PASSWORD}"
+                            },
+                            {
+                                "name": "MYSQL_HOST",
+                                "value": "${DB_HOST}"
+                            },
+                            {
+                                "name": "MYSQL_PORT_NUMBER",
+                                "value": "${DB_PORT_NUMBER}"
+                            }
+                        ]
+                    }
+                },
+                "triggers": [
+                    {},
+                    {
+                        "generic": {
+                            "secret": "F-ilfroO9PAhjTRSWX67"
+                        },
+                        "type": "Generic"
+                    },
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange"
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}-mysql",
+                "labels": {
+                    "project": "${PROJECT_NAME}",
+                    "app": "${APPLICATION_NAME}",
+                    "build": "${APPLICATION_NAME}-mysql"
+                }
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "3306-tcp",
+                        "protocol": "TCP",
+                        "port": 3306,
+                        "targetPort": 3306
+                    }
+                ],
+                "clusterIP": "None",
+                "selector": {
+                    "app": "${APPLICATION_NAME}-mysql",
+                    "deployconfig": "${APPLICATION_NAME}-mysql-deploy"
+                }
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}-mysql",
+                "labels": {
+                    "project": "${PROJECT_NAME}",
+                    "app": "${APPLICATION_NAME}",
+                    "build": "${APPLICATION_NAME}-mysql"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "triggers": [
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "selector": {
+                    "app": "${APPLICATION_NAME}-mysql",
+                    "deployconfig": "${APPLICATION_NAME}-mysql-deploy"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "app": "${APPLICATION_NAME}-mysql",
+                            "deployconfig": "${APPLICATION_NAME}-mysql-deploy"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "${APPLICATION_NAME}-mysql",
+                                "image": "${DOCKER_REGISTER}/${PROJECT_NAME}/${APPLICATION_NAME}-mysql-img-1:latest",
+                                "args": [
+                                    "run-mysqld"
+                                ],
+                                "ports": [
+                                    {
+                                        "containerPort": 3306,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {
+                                    "limits": {
+                                        "memory": "512Mi"
+                                    }
+                                },
+                                "env": [
+                                    {
+                                        "name": "MYSQL_USER",
+                                        "value": "${DB_USER}"
+                                    },
+                                    {
+                                        "name": "MYSQL_PASSWORD",
+                                        "value": "${DB_PASSWORD}"
+                                    },
+                                    {
+                                        "name": "MYSQL_DATABASE",
+                                        "value": "${DB_NAME}"
+                                    },
+                                    {
+                                        "name": "MYSQL_ROOT_PASSWORD",
+                                        "value": "${DB_ROOT_PASSWORD}"
+                                    },
+                                    {
+                                        "name": "MYSQL_HOST",
+                                        "value": "${DB_HOST}"
+                                    },
+                                    {
+                                        "name": "MYSQL_PORT_NUMBER",
+                                        "value": "${DB_PORT_NUMBER}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "kind": "ConfigMap",
+            "metadata": {
+                "name": "${MYSQL_APPLICATION_NAME}-tester",
+                "labels": {
+                    "app": "${MYSQL_APPLICATION_NAME}-test",
+                    "build": "${MYSQL_APPLICATION_NAME}-test",
+                    "deploy": "${MYSQL_APPLICATION_NAME}-tester"
+                }
+            },
+            "data": {
+                "run.sh": ""
+            },
+            "apiVersion": "v1"
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${MYSQL_APPLICATION_NAME}-testeador",
+                "labels": {
+                    "app": "${MYSQL_APPLICATION_NAME}-test",
+                    "build": "${MYSQL_APPLICATION_NAME}-test",
+                    "deploy": "${MYSQL_APPLICATION_NAME}-tester"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "triggers": [
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "selector": {
+                    "app": "${MYSQL_APPLICATION_NAME}-tester",
+                    "deploymentconfig": "${MYSQL_APPLICATION_NAME}-tester"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "app": "${MYSQL_APPLICATION_NAME}-tester",
+                            "deploymentconfig": "${MYSQL_APPLICATION_NAME}-tester"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "dduportal-bats",
+                                "image": "dduportal/bats:0.4.0",
+                                "command": [
+                                    "bash",
+                                    "-c",
+                                    "set- ex",
+                                    "cp -R /usr/local/libexec/ /tools/bats/"
+                                ],
+                                "resources": {
+                                    "limits": {
+                                        "memory": "512Mi"
+                                    }
+                                },
+                                "readinessProbe": {
+                                    "exec": {
+                                        "command": [
+                                            "sh",
+                                            "-c",
+                                            "exec mysqladmin status --host=$(hostname) --user=root --password=$DB_ROOT_PASSWORD"
+                                        ]
+                                    },
+                                    "initialDelaySeconds": 300,
+                                    "periodSeconds": 10,
+                                    "failureThreshold": 3
+                                },
+                                "volumeMounts": [
+                                    {
+                                        "mountPath": "/tests",
+                                        "name": "tests"
+                                    }
+                                ]
+                            }
+                        ],
+                        "volumes": [
+                            {
+                                "name": "tests",
+                                "configMap": {
+                                    "name": "${MYSQL_APPLICATION_NAME}-tester"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "kind": "ImageStream",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${MYSQL_APPLICATION_NAME}-img",
+                "labels": {
+                    "project": "${PROJECT_NAME}",
+                    "app": "${MYSQL_APPLICATION_NAME}",
+                    "build": "${MYSQL_APPLICATION_NAME}-s2i"
+                }
+            }
+        },
+        {
+            "apiVersion": "build.openshift.io/v1",
+            "kind": "BuildConfig",
+            "metadata": {
+                "labels": {
+                    "project": "${PROJECT_NAME}",
+                    "app": "${MYSQL_APPLICATION_NAME}",
+                    "build": "${MYSQL_APPLICATION_NAME}-s2i"
+                },
+                "name": "${MYSQL_APPLICATION_NAME}-img",
+                "namespace": "${PROJECT_NAME}"
+            },
+            "spec": {
+                "failedBuildsHistoryLimit": 5,
+                "nodeSelector": null,
+                "output": {
+                    "to": {
+                        "kind": "ImageStreamTag",
+                        "name": "${MYSQL_APPLICATION_NAME}-img:latest"
+                    }
+                },
+                "postCommit": {},
+                "resources": {},
+                "runPolicy": "Serial",
+                "source": {
+                    "contextDir": "test/test-app/mysql-cfg",
+                    "git": {
+                        "ref": "mysql80",
+                        "uri": "https://github.com/samyunodos/mysql-container-1.git"
+                    },
+                    "type": "Git"
+                },
+                "type": "Source",
+                "strategy": {
+                    "sourceStrategy": {
+                        "from": {
+                            "kind": "ImageStreamTag",
+                            "namespace": "${PROJECT_NAME}",
+                            "name": "${MYSQL_APPLICATION_NAME}-s2i:latest"
+                        }
+                    }
+                },
+                "triggers": [
+                    {},
+                    {
+                        "generic": {
+                            "secret": "F-ilfroO9PAhjTRSWX67"
+                        },
+                        "type": "Generic"
+                    },
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange"
+                    }
+                ]
+            }
+        },
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${MYSQL_APPLICATION_NAME}",
+                "labels": {
+                    "project": "${PROJECT_NAME}",
+                    "app": "${MYSQL_APPLICATION_NAME}",
+                    "build": "${MYSQL_APPLICATION_NAME}-s2i"
+                }
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "3306-tcp",
+                        "protocol": "TCP",
+                        "port": 3306,
+                        "targetPort": 3306
+                    }
+                ],
+                "selector": {
+                    "project": "${PROJECT_NAME}",
+                    "app": "${MYSQL_APPLICATION_NAME}",
+                    "build": "${MYSQL_APPLICATION_NAME}",
+                    "deploy": "${MYSQL_APPLICATION_NAME}-deploy"
+                }
+            }
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${MYSQL_APPLICATION_NAME}",
+                "labels": {
+                    "project": "${PROJECT_NAME}",
+                    "app": "${MYSQL_APPLICATION_NAME}",
+                    "build": "${MYSQL_APPLICATION_NAME}-s2i",
+                    "deploy": "${MYSQL_APPLICATION_NAME}-deploy"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Recreate"
+                },
+                "triggers": [
+                    {
+                        "type": "ConfigChange"
+                    }
+                ],
+                "replicas": 1,
+                "selector": {
+                    "project": "${PROJECT_NAME}",
+                    "app": "${MYSQL_APPLICATION_NAME}",
+                    "build": "${MYSQL_APPLICATION_NAME}",
+                    "deploy": "${MYSQL_APPLICATION_NAME}-deploy"
+                },
+                "template": {
+                    "metadata": {
+                        "labels": {
+                            "project": "${PROJECT_NAME}",
+                            "app": "${MYSQL_APPLICATION_NAME}",
+                            "build": "${MYSQL_APPLICATION_NAME}",
+                            "deploy": "${MYSQL_APPLICATION_NAME}-deploy"
+                        }
+                    },
+                    "spec": {
+                        "containers": [
+                            {
+                                "name": "mysql80",
+                                "image": "${DOCKER_REGISTER}/${PROJECT_NAME}/${MYSQL_APPLICATION_NAME}-img:latest",
+                                "args": [
+                                    "run-mysqld"
+                                ],
+                                "ports": [
+                                    {
+                                        "containerPort": 3306,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "resources": {
+                                    "limits": {
+                                        "memory": "512Mi"
+                                    }
+                                },
+                                "livenessProbe": {
+                                    "exec": {
+                                        "command": [
+                                            "/usr/bin/sh",
+                                            "-i",
+                                            "-c",
+                                            "MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb --host=${HOSTNAME}"
+                                        ]
+                                    },
+                                    "initialDelaySeconds": 20,
+                                    "periodSeconds": 20,
+                                    "failureThreshold": 30
+                                },
+                                "startupProbe": {
+                                    "exec": {
+                                        "command": [
+                                            "/usr/bin/sh",
+                                            "-i",
+                                            "-c",
+                                            "MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb  --host=${HOSTNAME}"
+                                        ]
+                                    },
+                                    "successThreshold": 1,
+                                    "failureThreshold": 30,
+                                    "periodSeconds": 10
+                                },
+                                "readinessProbe": {
+                                    "exec": {
+                                        "command": [
+                                            "/usr/bin/sh",
+                                            "-i",
+                                            "-c",
+                                            "MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb  --host=${HOSTNAME}"
+                                        ]
+                                    },
+                                    "initialDelaySeconds": 20,
+                                    "periodSeconds": 10,
+                                    "failureThreshold": 1
+                                },
+                                "env": [
+                                    {
+                                        "name": "MYSQL_DATABASE",
+                                        "value": "${DB_NAME}"
+                                    },
+                                    {
+                                        "name": "MYSQL_USER",
+                                        "value": "${DB_USER}"
+                                    },
+                                    {
+                                        "name": "MYSQL_PASSWORD",
+                                        "value": "${DB_PASSWORD}"
+                                    },
+                                    {
+                                        "name": "MYSQL_ROOT_PASSWORD",
+                                        "value": "${DB_ROOT_PASSWORD}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}
