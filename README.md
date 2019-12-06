@@ -1,5 +1,5 @@
 # test-openshift
-====================
+
 I am going to create a new repository within the Laboratory Environment for Wordpress project that I will call test-openshift where all the files referring to the tests in openshift will be.
 
 The repository is part of a project ( "Laboratory Environment for Wordpress")  whose objective  is to create a laboratory environment to work through Openshit 3.11 on a website created with Wordpress. In this repository we create container image mysql database for Wordpress based on Centos7.
