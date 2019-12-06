@@ -14,6 +14,8 @@ The repository is part of a project ( "Laboratory Environment for Wordpress")  w
  
  The tests are developed in openshitf and we will not show their development and performance. If we note that we will do individualized tests for each image and a global one with all the images at play (wordpress and mysql).
  
+ I will create a directory for mysql, another for wordpress, another for the project (mysql and wordpress) in addition to another in which documentation is provided.
+ 
 # Contributing
 
 In principle it is a personal and public project.
