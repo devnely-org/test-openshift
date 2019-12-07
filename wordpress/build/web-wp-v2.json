@@ -40,7 +40,7 @@
         {
             "name": "SOURCE_REPOSITORY_MYSQL_TAG",
             "description": "The tagged version of the source repository to use.",
-            "value": "#3_config_database",
+            "value": "develop",
             "required": true
         },
         {
@@ -52,7 +52,7 @@
         {
             "name": "SOURCE_REPOSITORY_WP_TAG",
             "description": "The tagged version of the source repository to use.",
-            "value": "wp",
+            "value": "develop",
             "required": true
         },
         {
@@ -64,7 +64,7 @@
         {
             "name": "SOURCE_REPOSITORY_WP_PRIVATE_TAG",
             "description": "The tagged version of the source repository to use.",
-            "value": "work",
+            "value": "master",
             "required": true
         },
         {
@@ -433,8 +433,8 @@
                 "runPolicy": "Serial",
                 "source": {
                     "git": {
-                        "ref": "$SOURCE_REPOSITORY_WP_TAG",
-                        "uri": "$SOURCE_REPOSITORY_WP_URL"
+                        "ref": "${SOURCE_REPOSITORY_WP_TAG}",
+                        "uri": "${SOURCE_REPOSITORY_WP_URL}"
                     },
                     "type": "Git"
                 },
@@ -503,10 +503,9 @@
                 "resources": {},
                 "runPolicy": "Serial",
                 "source": {
-                    "contextDir": "contexto",
                     "git": {
-                        "ref": "$SOURCE_REPOSITORY_WP_TAG",
-                        "uri": "$SOURCE_REPOSITORY_WP_URL"
+                        "ref": "${SOURCE_REPOSITORY_WP_TAG}",
+                        "uri": "${SOURCE_REPOSITORY_WP_URL}"
                     },
                     "type": "Git"
                 },
@@ -601,8 +600,8 @@
                 "runPolicy": "Serial",
                 "source": {
                     "git": {
-                        "ref": "$SOURCE_REPOSITORY_WP_PRIVATE_TAG",
-                        "uri": "$SOURCE_REPOSITORY_WP_PRIVATE_URL"
+                        "ref": "${SOURCE_REPOSITORY_WP_PRIVATE_TAG}",
+                        "uri": "${SOURCE_REPOSITORY_WP_PRIVATE_URL}"
                     },
                     "sourceSecret": {
                         "name": "github-secret"

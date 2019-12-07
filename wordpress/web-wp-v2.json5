@@ -40,7 +40,7 @@
     {
       "name": "SOURCE_REPOSITORY_MYSQL_TAG",
       "description": "The tagged version of the source repository to use.",
-      "value": "#3_config_database",
+      "value": "develop",
       "required": true
     },
      {
@@ -52,7 +52,10 @@
     {
       "name": "SOURCE_REPOSITORY_WP_TAG",
       "description": "The tagged version of the source repository to use.",
-      "value": "wp",
+      // "value": "#3_add_fpm_wpi_mysqlclient_silo",
+      // "value": "#6_fix_assemble_s2i_bin",
+       "value": "develop",
+       // "value": "#5_change__paths_7.2_Dockerfile",
       "required": true
     },
     {
@@ -64,7 +67,7 @@
     {
       "name": "SOURCE_REPOSITORY_WP_PRIVATE_TAG",
       "description": "The tagged version of the source repository to use.",
-      "value": "work",
+      "value": "master",
       "required": true
     },
     { "name": "DOCKER_REGISTER",
@@ -438,8 +441,8 @@
         "source": {
           // "contextDir": "7.2",
           "git": {
-            "ref": "$SOURCE_REPOSITORY_WP_TAG",
-            "uri": "$SOURCE_REPOSITORY_WP_URL"
+            "ref": "${SOURCE_REPOSITORY_WP_TAG}",
+            "uri": "${SOURCE_REPOSITORY_WP_URL}"
           },
           "type": "Git"
         },
@@ -519,10 +522,10 @@
         },
         "runPolicy": "Serial",
         "source": {
-          "contextDir": "contexto",
+          // "contextDir": "contexto",
           "git": {
-            "ref": "$SOURCE_REPOSITORY_WP_TAG",
-            "uri": "$SOURCE_REPOSITORY_WP_URL"
+            "ref": "${SOURCE_REPOSITORY_WP_TAG}",
+            "uri": "${SOURCE_REPOSITORY_WP_URL}"
           },
           "type": "Git"
         },
@@ -666,8 +669,8 @@
         "runPolicy": "Serial",
         "source": {
           "git": {
-             "ref": "$SOURCE_REPOSITORY_WP_PRIVATE_TAG",
-            "uri": "$SOURCE_REPOSITORY_WP_PRIVATE_URL"
+            "ref": "${SOURCE_REPOSITORY_WP_PRIVATE_TAG}",
+            "uri": "${SOURCE_REPOSITORY_WP_PRIVATE_URL}"
           },
           "sourceSecret": {
             "name": "github-secret"
