@@ -56,6 +56,18 @@
             "required": true
         },
         {
+            "name": "SOURCE_REPOSITORY_WP_PRIVATE_URL",
+            "description": "The URL of the quickstart Git repository.",
+            "value": "https://github.com/devnely-org/devnely.git",
+            "required": true
+        },
+        {
+            "name": "SOURCE_REPOSITORY_WP_PRIVATE_TAG",
+            "description": "The tagged version of the source repository to use.",
+            "value": "work",
+            "required": true
+        },
+        {
             "name": "DOCKER_REGISTER",
             "description": "The password for the database user.",
             "value": "docker-registry.default.svc:5000"
@@ -421,8 +433,8 @@
                 "runPolicy": "Serial",
                 "source": {
                     "git": {
-                        "ref": "wp",
-                        "uri": "https://github.com/samyunodos/s2i-php-container.git"
+                        "ref": "$SOURCE_REPOSITORY_WP_TAG",
+                        "uri": "$SOURCE_REPOSITORY_WP_URL"
                     },
                     "type": "Git"
                 },
@@ -493,8 +505,8 @@
                 "source": {
                     "contextDir": "contexto",
                     "git": {
-                        "ref": "wp",
-                        "uri": "https://github.com/samyunodos/s2i-php-container.git"
+                        "ref": "$SOURCE_REPOSITORY_WP_TAG",
+                        "uri": "$SOURCE_REPOSITORY_WP_URL"
                     },
                     "type": "Git"
                 },
@@ -589,8 +601,8 @@
                 "runPolicy": "Serial",
                 "source": {
                     "git": {
-                        "ref": "work",
-                        "uri": "https://github.com/samyunodos/devnely.git"
+                        "ref": "$SOURCE_REPOSITORY_WP_PRIVATE_TAG",
+                        "uri": "$SOURCE_REPOSITORY_WP_PRIVATE_URL"
                     },
                     "sourceSecret": {
                         "name": "github-secret"
