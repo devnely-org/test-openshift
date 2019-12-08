@@ -40,10 +40,10 @@
     {
       "name": "SOURCE_REPOSITORY_MYSQL_TAG",
       "description": "The tagged version of the source repository to use.",
-      "value": "develop",
+      "value": "#3_config_database",
       "required": true
     },
-     {
+    {
       "name": "SOURCE_REPOSITORY_WP_URL",
       "description": "The URL of the quickstart Git repository.",
       "value": "https://github.com/devnely-org/s2i-php-container.git",

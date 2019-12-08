@@ -40,7 +40,7 @@
         {
             "name": "SOURCE_REPOSITORY_MYSQL_TAG",
             "description": "The tagged version of the source repository to use.",
-            "value": "develop",
+            "value": "#3_config_database",
             "required": true
         },
         {

@@ -43,6 +43,16 @@
       "value": "passmaster",
       "from": "[a-zA-Z0-9]{12}"
     },
+     {
+      "name": "WP_VOLUME_SIZE",
+      "description": "The password used for the MYSQL_MASTER_USER",
+       "value": "8Gi"
+     },
+    {
+      "name": "WP_VOLUME_TYPE",
+      "description": "The password used for the MYSQL_MASTER_USER",
+       "value": "ReadWriteMany"
+     },
     {
       "name": "SOURCE_REPOSITORY_MYSQL_URL",
       "description": "The URL of the quickstart Git repository.",
@@ -107,6 +117,7 @@
       "description": "La contraseña del usuario para la base de datos (MYSQL_PASSWORD). Posteriormente la introudciremos como un secreto de kubernetes.",
       "value": "passuserdb"
     },
+
     {
       "name": "WP_ROOT_DB_PASSWORD",
       "description": "El password del root de msql (MYSQL_ROOT_PASSWORD).  Posteriormente la introudciremos como un secreto de kubernetes.",
@@ -125,6 +136,30 @@
     }
   ],
   "objects": [
+    {
+      "kind": "PersistentVolumeClaim",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${APP_NAME}-${WP_SVC}-data",
+        "labels": {
+          "app": "${APP_NAME}",
+          "app-service": "${APP_NAME}-${WP_SVC}",
+          "build": "${APP_NAME}-${WP_SVC}",
+          "build1": "${APP_NAME}-${WP_SVC}",
+          "deploy": "${APP_NAME}-${WP_SVC}"
+        }
+      },
+      "spec": {
+        "accessModes": [
+          "${WP_VOLUME_TYPE}"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "${WP_VOLUME_SIZE}"
+          }
+        }
+      }
+    },
     {
       "kind": "ImageStream",
       "apiVersion": "v1",
@@ -1015,11 +1050,19 @@
         },
         "spec": {
           // "serviceAccountName": "default",
-            "securityContext": {
-              "fsGroup": "0",
-              "runAsUser": "1001",
-              "runAsGroup": "0"
-            },
+          "securityContext": {
+            "fsGroup": "0",
+            "runAsUser": "1001",
+            "runAsGroup": "0"
+          },
+          "volumes": [
+            {
+              "name": "${APP_NAME}-${WP_SVC}-data",
+                "persistentVolumeClaim": {
+                  "claimName":  "${APP_NAME}-${WP_SVC}-data"
+                }
+              }
+            ],
           "containers": [
             {
               "name": "${APP_NAME}-${WP_SVC}",
@@ -1090,7 +1133,13 @@
                 //   "name": "DB_PORT_NUMBER",
                 //   "value": "${DB_PORT_NUMBER}"
                 //}
-              ]
+              ],
+              "volumeMounts": [
+                {
+                  "name": "${APP_NAME}-${WP_SVC}-data",
+                  "mountPath": "/silo"
+                }
+                ]
             } 
           ],
           "dnsPolicy": "ClusterFirst",
