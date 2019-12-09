@@ -382,7 +382,7 @@
                     "spec": {
                         "securityContext": {
                             "fsGroup": "0",
-                            "runAsUser": "27",
+                            "runAsUser": "1001",
                             "runAsGroup": "0"
                         },
                         "containers": [
