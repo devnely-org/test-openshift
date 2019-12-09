@@ -1053,7 +1053,13 @@
           "securityContext": {
             "fsGroup": "0",
             "runAsUser": "1001",
-            "runAsGroup": "0"
+            "runAsGroup": "0",
+            "privileged": true,
+            "capabilities": {
+              "add": [
+                "SYS_ADMIN"
+              ]
+            }
           },
           "volumes": [
             {
