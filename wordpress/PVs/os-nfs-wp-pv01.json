@@ -19,8 +19,7 @@
       "ReadWriteMany"
     ],
     "mountOptions": [
-      "hard",
-      "nfsvers=4.1"
+      "autofs"
     ],
     "nfs": {
       "server": "ctrl.srv.world",
