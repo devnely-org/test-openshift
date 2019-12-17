@@ -379,6 +379,14 @@
                             "runAsUser": "27",
                             "runAsGroup": "0"
                         },
+                        "volumes": [
+                            {
+                                "name": "${APP_NAME}-${MYSQL_SVC}-data",
+                                "persistentVolumeClaim": {
+                                    "claimName": "${APP_NAME}-${MYSQL_SVC}-data"
+                                }
+                            }
+                        ],
                         "containers": [
                             {
                                 "name": "${APP_NAME}-${MYSQL_SVC}",
@@ -456,6 +464,12 @@
                                     {
                                         "name": "MYSQL_HOST",
                                         "value": "localhost"
+                                    }
+                                ],
+                                "volumeMounts": [
+                                    {
+                                        "name": "${APP_NAME}-${MYSQL_SVC}-data",
+                                        "mountPath": "/var/lib/mysql"
                                     }
                                 ]
                             }
@@ -778,6 +792,14 @@
                             "runAsUser": "1001",
                             "runAsGroup": "0"
                         },
+                        "volumes": [
+                            {
+                                "name": "${APP_NAME}-${WP_SVC}-data",
+                                "persistentVolumeClaim": {
+                                    "claimName": "${APP_NAME}-${WP_SVC}-data"
+                                }
+                            }
+                        ],
                         "containers": [
                             {
                                 "name": "${APP_NAME}-${WP_SVC}",

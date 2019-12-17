@@ -393,6 +393,14 @@
               "runAsUser": "27",
               "runAsGroup": "0"
             },
+             "volumes": [
+              {
+                "name": "${APP_NAME}-${MYSQL_SVC}-data",
+                "persistentVolumeClaim": {
+                  "claimName":  "${APP_NAME}-${MYSQL_SVC}-data"
+                }
+              }
+            ],
             "containers": [
               {
                 "name": "${APP_NAME}-${MYSQL_SVC}",
@@ -462,15 +470,21 @@
                   //   "name": "MYSQL_PORT_NUMBER",
                   //   "value": "${WP_DB_PORT_NUMBER}"
                   //}
+                ],
+                "volumeMounts": [
+                {
+                  "name": "${APP_NAME}-${MYSQL_SVC}-data",
+                  "mountPath": "/var/lib/mysql"
+                }
                 ]
-              }
-            ]
           }
-        }
+        ]
       }
-    },
-    {
-      "kind": "ImageStream",
+    }
+  }
+},
+{
+  "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
         "name": "${APP_NAME}-${WP_SVC}-img-0",
@@ -909,6 +923,14 @@
               "runAsUser": "1001",
               "runAsGroup": "0"
             },
+          "volumes": [
+            {
+              "name": "${APP_NAME}-${WP_SVC}-data",
+              "persistentVolumeClaim": {
+                "claimName":  "${APP_NAME}-${WP_SVC}-data"
+              }
+            }
+          ],
           "containers": [
             {
               "name": "${APP_NAME}-${WP_SVC}",
