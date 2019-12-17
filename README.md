@@ -16,6 +16,16 @@ The repository is part of a project ( "Laboratory Environment for Wordpress")  w
  
  I will create a directory for mysql, another for wordpress, another for the project (mysql and wordpress) in addition to another in which documentation is provided.
  
+### Diferents deployments
+
+- "wordpress/web-wp.v1.json5" Deployment one instance of wordpress and mysql. No persistence. Simple.
+
+```
+$ oc delete all --all -n image-wp
+$ oc process -f wordpress/build/web-wp.v1.json  | oc apply -l 'build1 in (web-wp)' -f - 
+
+```
+
 # Contributing
 
 In principle it is a personal and public project.

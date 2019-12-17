@@ -5,7 +5,7 @@
         "name": "Web-Wordpress-Mysql",
         "annotations": {
             "openshift.io/display-name": "Wordpress con mysql",
-            "description": "Creamos la imagen mysql y de wordpress a partir de software collection. Después desplegamos.",
+            "description": "Creamos la imagen mysql y de wordpress a partir de software collection. Después desplegamos",
             "tags": "wordpress,mysql",
             "iconClass": "icon-wordpress"
         },
@@ -716,10 +716,12 @@
                                 "image": "${DOCKER_REGISTER}/${PROJECT_NAME}/${APP_NAME}-${WP_SVC}-img-1:latest",
                                 "ports": [
                                     {
+                                        "name": "http",
                                         "containerPort": 8080,
                                         "protocol": "TCP"
                                     },
                                     {
+                                        "name": "https",
                                         "containerPort": 8443,
                                         "protocol": "TCP"
                                     }

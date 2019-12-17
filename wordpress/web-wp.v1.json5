@@ -5,7 +5,7 @@
     "name": "Web-Wordpress-Mysql",
     "annotations": {
       "openshift.io/display-name": "Wordpress con mysql",
-      "description": "Creamos la imagen mysql y de wordpress a partir de software collection. Después desplegamos.",
+      "description": "Creamos la imagen mysql y de wordpress a partir de software collection. Después desplegamos",
       "tags": "wordpress,mysql",
       "iconClass": "icon-wordpress"
     },
@@ -40,7 +40,7 @@
     {
       "name": "SOURCE_REPOSITORY_MYSQL_TAG",
       "description": "The tagged version of the source repository to use.",
-      "value": "#3_config_database",
+      "value": "develop",
       "required": true
     },
     {
@@ -847,10 +847,12 @@
               "image": "${DOCKER_REGISTER}/${PROJECT_NAME}/${APP_NAME}-${WP_SVC}-img-1:latest",
               "ports": [
                 {
+                  "name": "http",
                   "containerPort": 8080,
                   "protocol": "TCP"
                 },
                 {
+                  "name": "https",
                   "containerPort": 8443,
                   "protocol": "TCP"
                 }
@@ -860,31 +862,58 @@
                   "memory": "512Mi"
                 }
               },
-              // "livenessProbe": {
-              //   "exec":{
-              //     "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb --host=${HOSTNAME}" ]
-              //   },
-              //   "initialDelaySeconds": 20,
-              //   "periodSeconds": 20,
-              //   "failureThreshold": 30
-              // },
               // "startupProbe": {
-              //   "exec": {
-              //     "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb  --host=${HOSTNAME}" ]
+              //   "httpGet": {
+              //     "path": "/wp-login.php",
+              //     "port": "https",
+              //     "scheme": "https",
+              //     "httpHeaders": [
+					    //       {
+						  //         "name": "X-Forwarded-Proto",
+						  //         "value": "https"
+					    //       }
+					    //     ]
               //   },
               //   "successThreshold": 1,
-              //   "failureThreshold": 30, 
+              //   // "failureThreshold": 30, 
               //   "periodSeconds": 10
               // },
               // "readinessProbe": {
-              //   "exec":{
-              //     // "command": [ "mysqladmin status --user=root --host=$(hostname) --password=$MYSQL_ROOT_PASSWORD" ]
-              //     "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb  --host=${HOSTNAME}" ]
+              //   "httpGet": {
+              //     "path": "/wp-admin/install.php",
+              //     "port": "https",
+              //     "scheme": "https",
+              //     "httpHeaders": [
+					    //       {
+						  //         "name": "X-Forwarded-Proto",
+						  //         "value": "https"
+					    //       }
+					    //     ]
               //   },
               //   "initialDelaySeconds": 20,
               //   "periodSeconds": 10,
-              //   "failureThreshold": 1
+              //   "successThreshold": 1,
+              //   "timeoutSeconds": 1
+              //   // "failureThreshold": 1
               // },
+              // "livenessProbe": {
+              //   "httpGet": {
+              //     "path": "/wp-admin/install.php",
+              //     "port": "https",
+              //     "scheme": "https",
+              //     "httpHeaders": [
+					    //       {
+						  //         "name": "X-Forwarded-Proto",
+						  //         "value": "https"
+					    //       }
+					    //     ]
+              //   },
+              //   "initialDelaySeconds": 20,
+              //   "periodSeconds": 10,
+              //   "successThreshold": 1,
+              //   "failureThreshold": 3,
+              //   "timeoutSeconds": 1
+              // },              
               "env": [
                 {
                   "name": "DB_NAME",

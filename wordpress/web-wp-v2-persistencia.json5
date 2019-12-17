@@ -847,6 +847,19 @@
         }
       },
       "spec": {
+        "securityContext": {
+          "runAsUser": 0,
+          "privileged": true,
+          "capabilities": {
+            "add": [
+              "SYS_ADMIN"
+            ]
+           
+          },
+          "suplementalGroups": [
+            65534
+          ]
+        },
         "strategy": {
           "type": "Rolling"
           //"type": "Recreate"
@@ -861,29 +874,29 @@
           "app": "${APP_NAME}",
           "deployconfig":  "${APP_NAME}-${WP_SVC}"
       },
-      "template": {
-        "metadata": {
-          "labels": {
-            "app": "${APP_NAME}",
-            "deployconfig":  "${APP_NAME}-${WP_SVC}"
-          }
-        },
-        "spec": {
-          // "serviceAccountName": "default",
-          "securityContext": {
-            "fsGroup": "0",
-            "runAsUser": "1001",
-            "runAsGroup": "0",
-            "privileged": true,
-            "capabilities": {
-              "add": [
-                "SYS_ADMIN"
-              ]
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "${APP_NAME}",
+              "deployconfig":  "${APP_NAME}-${WP_SVC}"
             }
           },
-          "volumes": [
-            {
-              "name": "${APP_NAME}-${WP_SVC}-data",
+          "spec": {
+            // "serviceAccountName": "default",
+            // "securityContext": {
+            //   "fsGroup": "0",
+            //   "runAsUser": "1001",
+            //   "runAsGroup": "0",
+            //   "privileged": true,
+            //   "capabilities": {
+            //     "add": [
+            //       "SYS_ADMIN"
+            //     ]
+            //   }
+            // },
+            "volumes": [
+              {
+                "name": "${APP_NAME}-${WP_SVC}-data",
                 "persistentVolumeClaim": {
                   "claimName":  "${APP_NAME}-${WP_SVC}-data"
                 }
