@@ -74,8 +74,8 @@
       "description": "The tagged version of the source repository to use.",
       // "value": "#3_add_fpm_wpi_mysqlclient_silo",
       // "value": "#6_fix_assemble_s2i_bin",
-       "value": "develop",
-       // "value": "#5_change__paths_7.2_Dockerfile",
+       // "value": "develop",
+       "value": "#8_clean_on",
       "required": true
     },
     {
@@ -970,7 +970,7 @@
               },
               "readinessProbe": {
                 "httpGet": {
-                  "path": "/wp-admin/setup-config.php",
+                  "path": "/wp-login.php",
                   "port": "https",
                   "scheme": "HTTPS",
                   "httpHeaders": [
@@ -988,7 +988,7 @@
               },
               "livenessProbe": {
                 "httpGet": {
-                  "path": "/wp-admin/setup-config.php",
+                  "path": "/wp-login.php",
                   "port": "https",
                   "scheme": "HTTPS",
                   "httpHeaders": [
