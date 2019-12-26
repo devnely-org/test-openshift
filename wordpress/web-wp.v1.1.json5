@@ -99,7 +99,7 @@
       "description": "Nombre de la aplicación.",
       "value": "image-wp"
     },
-    //### Todas las variables que empiezan por DB se introducencen desde el contenedor wordpress asi como las que aún no homos usado DB_HOST y DB_TABLE_PREFIX.
+    //### Todas las variables que empieza por DB se introducencen desde el contenedor wordpress asi como las que aún no homos usado DB_HOST y DB_TABLE_PREFIX.
     {
       "name": "WP_DB_NAME",
       "description": "Nombre de la base de datos (MYSQL_DATABASE).",
