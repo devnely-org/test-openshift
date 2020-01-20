@@ -18,7 +18,8 @@ The repository is part of a project ( "Laboratory Environment for Wordpress")  w
  
 ### Diferents deployments
 
-- "wordpress/web-wp.v1.json5" Deployment one instance of wordpress and mysql. No persistence. Simple.
+En la rama simple_3 generamos el archivo "wordpress/web-wp.json5" sin persistencia ni la estructura maestro-servidor de la base de datos:
+
 
 ```
 $ oc delete all --all -n image-wp

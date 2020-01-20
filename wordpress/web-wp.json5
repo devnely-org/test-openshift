@@ -5,7 +5,7 @@
     "name": "Web-Wordpress-Mysql",
     "annotations": {
       "openshift.io/display-name": "Wordpress con mysql",
-      "description": "Creamos la imagen mysql y de wordpress a partir de software collection. Después desplegamos.",
+      "description": "Creamos una imagen mysql y de wordpress a partir de software collection. Después desplegamos.",
       "tags": "wordpress,mysql",
       "iconClass": "icon-wordpress"
     },
@@ -308,7 +308,7 @@
         ],
         "replicas": 1,
         "selector": {
-          "app": "${APP_NAME}-master",
+          "app": "${APP_NAME}",
           "deployconfig":  "${APP_NAME}-${MYSQL_SVC}"
         },
         "template": {
@@ -330,7 +330,7 @@
                 "name": "${APP_NAME}-${MYSQL_SVC}",
                 "image": "${DOCKER_REGISTER}/${PROJECT_NAME}/${APP_NAME}-${MYSQL_SVC}-img-1:latest",
                 "args": [
-                  "run-mysqld-master"
+                  "run-mysqld"
                 ],
                 "ports": [
                   {
