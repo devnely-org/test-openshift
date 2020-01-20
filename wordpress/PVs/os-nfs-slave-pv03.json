@@ -1,0 +1,31 @@
+{
+  "kind": "PersistentVolume",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "web-slave-data",
+    "labels": {
+      "app": "web",
+      "app-service": "web-app"
+    }
+  },
+  "spec": {
+    "capacity": {
+      "storage": "8Gi"
+    },
+    "volumeMode": "Filesystem",
+    "persistentVolumeReclaimPolicy": "Retain",
+    "storageClassName": "",
+    "accessModes": [
+      "ReadWriteMany"
+    ],
+    "mountOptions": [
+      "hard",
+      "bg",
+      "_netdev"
+    ],
+    "nfs": {
+      "server": "ctrl.srv.world",
+      "path": "/var/nfs-data/pv03"
+    }
+  }
+}
