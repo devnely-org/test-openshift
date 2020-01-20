@@ -23,16 +23,27 @@ The repository is part of a project ( "Laboratory Environment for Wordpress")  w
 
 ```
 $ oc delete all --all -n image-wp
-$ oc process -f wordpress/build/web-wp.v1.json  | oc apply  -f - 
-# $ oc process -f wordpress/build/web-wp.v1.json  | oc apply -l 'build1 in (web-wp)' -f - 
+$ oc process -f wordpress/build/web-wp.json  | oc apply  -f - 
+# $ oc process -f wordpress/build/web-wp.json  | oc apply -l 'build1 in (web-wp)' -f - 
 
 ```
-   - En la rama "simple_master_slave_4" el archivo "wordpress/web-wp.json5" sin persistencia ni la estructura maestro-servidor de la base de datos:
+   - En la rama "simple_master_slave_4" el archivo "wordpress/web-wp.json5" sin persistencia pero con la estructura maestro-servidor de la base de datos:
    
-   ```
-$ oc delete all --all -n image-wp
-$ oc process -f wordpress/build/web-wp.v1.json  | oc apply  -f - 
 ```
+$ oc delete all --all -n image-wp
+$ oc process -f wordpress/build/web-wp.json  | oc apply  -f - 
+
+```
+   - En la rama "pesistente_master_slave_5" el archivo "wordpress/web-wp.json5" con persistencia en la instancia de wordpress y con  la estructura maestro-servidor de la base de datos:
+   
+```
+$ oc delete all --all -n image-wp
+$ oc delete -f wordpress/PVs/os-nfs-wp-pv01.json 
+$ oc apply -f wordpress/PVs/os-nfs-wp-pv01.json
+$ oc process -f wordpress/build/web-wp.json  | oc apply  -f - 
+
+```
+   
    
 # Contributing
 
