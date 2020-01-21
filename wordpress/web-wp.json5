@@ -32,6 +32,16 @@
       "required": true
     },
     {
+      "name": "WP_VOLUME_SIZE",
+      "description": "The password used for the MYSQL_MASTER_USER",
+       "value": "8Gi"
+     },
+    {
+      "name": "WP_VOLUME_TYPE",
+      "description": "The password used for the MYSQL_MASTER_USER",
+       "value": "ReadWriteMany"
+     },
+    {
       "name": "MYSQL_MASTER_USER",
       "description": "The username used for master-slave replication",
       "value": "master"
@@ -104,7 +114,7 @@
     },
     {
       "name": "WP_DB_PASSWORD",
-      "description": "La contraseña del usuario para la base de datos (MYSQL_PASSWORD). Posteriormente la introudciremos como un secreto de kubernetes.",
+      "description": "La contraseña del usuario para la base de datos (MYSQL_PASSWORD). Posteriormente la introduciremos como un secreto de kubernetes.",
       "value": "passuserdb"
     },
     {
@@ -115,7 +125,7 @@
     },
     {
       "name": "WP_DB_HOST",
-      "description": "El nombre del host dónde se encuentra la base de datos. Generalmente suele ser el nombre del servicio que expone la base de datos.",
+      "description": "El nombre del host donde se encuentra la base de datos. Generalmente suele ser el nombre del servicio que expone la base de datos.",
       "value": "web-mysql"
     },
     {
@@ -125,6 +135,30 @@
     }
   ],
   "objects": [
+    {
+      "kind": "PersistentVolumeClaim",
+      "apiVersion": "v1",
+      "metadata": {
+        "name": "${APP_NAME}-${WP_SVC}-data",
+        "labels": {
+          "app": "${APP_NAME}",
+          "app-service": "${APP_NAME}-${WP_SVC}",
+          "build": "${APP_NAME}-${WP_SVC}",
+          "build1": "${APP_NAME}-${WP_SVC}",
+          "deploy": "${APP_NAME}-${WP_SVC}"
+        }
+      },
+      "spec": {
+        "accessModes": [
+          "${WP_VOLUME_TYPE}"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "${WP_VOLUME_SIZE}"
+          }
+        }
+      }
+    },
     {
       "kind": "ImageStream",
       "apiVersion": "v1",
@@ -948,36 +982,6 @@
         }
       }
     },
-    // {
-    //   "kind": "Route",
-    //   "apiVersion": "v1",
-    //   "metadata": {
-    //     "name": "${APP_NAME}-${WP_SVC}",
-    //     "labels": {
-    //       "app": "${APP_NAME}",
-    //       "app-service": "${APP_NAME}-${WP_SVC}",
-    //       "build": "${APP_NAME}-${WP_SVC}",
-    //       "build1": "${APP_NAME}-${WP_SVC}",
-    //       "deploy": "${APP_NAME}-${WP_SVC}"
-    //     }
-    //   },
-    //   "spec": {
-    //     // "host": "my.wordpress.ejemplo.org",
-    //     // "path": "/",
-    //     "port": {
-    //       "targetPort": "8080-tcp"
-    //       // "targetPort": 8443-tcp
-    //     },
-    //     "to":{
-    //       "kind": "Service",
-    //       "name": "${APP_NAME}-${WP_SVC}"
-    //     },
-    //     "tls": {
-    //       "termination": "edge",
-    //       "insecureEdgeTerminationPolicy": "Allow" 
-    //     }
-    //   }
-    // },
     {
       "kind": "DeploymentConfig",
       "apiVersion": "v1",
@@ -1020,6 +1024,14 @@
               "runAsUser": "1001",
               "runAsGroup": "0"
             },
+            "volumes": [
+              {
+                "name": "${APP_NAME}-${WP_SVC}-data",
+                "persistentVolumeClaim": {
+                  "claimName":  "${APP_NAME}-${WP_SVC}-data"
+                }
+              }
+            ],
             "containers": [
               {
                 "name": "${APP_NAME}-${WP_SVC}",
@@ -1090,6 +1102,12 @@
                   //   "name": "DB_PORT_NUMBER",
                   //   "value": "${DB_PORT_NUMBER}"
                   //}
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "${APP_NAME}-${WP_SVC}-data",
+                    "mountPath": "/silo"
+                  }
                 ]
               } 
             ],
@@ -1100,7 +1118,5 @@
         }
       }
     }
-
-
   ]
 }
