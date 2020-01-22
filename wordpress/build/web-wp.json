@@ -74,12 +74,12 @@
         {
             "name": "SOURCE_REPOSITORY_WP_TAG",
             "description": "The tagged version of the source repository to use.",
-            "value": "master",
+            "value": "dev",
             "required": true
         },
         {
             "name": "SOURCE_REPOSITORY_WP_PRIVATE_URL",
-            "description": "The URL of the quickstart Git repository.",
+            "description": "The URL of  the quickstart Git repository.",
             "value": "https://github.com/devnely-org/devnely.git",
             "required": true
         },
