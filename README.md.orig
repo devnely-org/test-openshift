@@ -24,7 +24,11 @@ The repository is part of a project ( "Laboratory Environment for Wordpress")  w
 ```
 $ oc delete all --all -n image-wp
 $ oc process -f wordpress/build/web-wp.json  | oc apply  -f - 
+<<<<<<< HEAD
+# $ oc process -f wordpress/build/web-wp.json  | oc apply -l 'build1 in (kjjjjiiweb-wp)' -f - 
+=======
 # $ oc process -f wordpress/build/web-wp.json  | oc apply -l 'build1 in (web-wp)' -f - 
+>>>>>>> ec0ff51f4e8fd4d6e6ce2fb89432af56fda8cd44
 
 ```
    - En la rama "simple_master_slave_4" el archivo "wordpress/web-wp.json5" sin persistencia pero con la estructura maestro-servidor de la base de datos:
