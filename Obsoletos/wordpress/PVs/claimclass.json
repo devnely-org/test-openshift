@@ -1,0 +1,27 @@
+{
+  "kind": "PersistentVolumeClaim",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "web-master-data",
+    "annotations": {
+      "volume.beta.kubernetes.io/storage-class": "nfs-statefulset"
+    },
+    "labels": {
+      "app": "web",
+      "app-service": "web-mysql",
+      "build": "web-mysql",
+      "build1": "web-mysql",
+      "deploy": "web-mysql"
+    }
+  },
+  "spec": {
+    "accessModes": [
+      "ReadWriteMany"
+    ],
+    "resources": {
+      "requests": {
+        "storage": "8Gi"
+      }
+    }
+  }
+}

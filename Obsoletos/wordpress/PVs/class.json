@@ -1,0 +1,20 @@
+{
+  "kind": "StorageClass",
+  "apiVersion": "storage.k8s.io/v1",
+  "metadata": {
+    "name": "nfs-statefulset",
+    "labels": {
+     "app": "web",
+      "app-service": "web-mysql",
+      "build": "web-mysql",
+      "build1": "web-mysql",
+      "deploy": "web-mysql"
+    }
+  },
+  "provisioner": "ctrl.srv.world",
+  "mountOptions": [
+    "hard",
+    "bg",
+    "_netdev"
+  ]
+}

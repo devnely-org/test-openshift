@@ -2,7 +2,7 @@
     "kind": "Template",
     "apiVersion": "v1",
     "metadata": {
-        "name": "Web-Wordpress-Mysql",
+        "name": "web_wordpress_mysql",
         "annotations": {
             "openshift.io/display-name": "Wordpress con mysql",
             "description": "Creamos la imagen mysql y de wordpress a partir de software collection. Después desplegamos.",
@@ -34,30 +34,10 @@
         {
             "name": "WP_VOLUME_SIZE",
             "description": "The password used for the MYSQL_MASTER_USER",
-            "value": "10Gi"
-        },
-        {
-            "name": "WP_VOLUME_TYPE",
-            "description": "The password used for the MYSQL_MASTER_USER",
-            "value": "ReadWriteMany"
-        },
-        {
-            "name": "MASTER_VOLUME_SIZE",
-            "description": "The password used for the MYSQL_MASTER_USER",
-            "value": "9Gi"
-        },
-        {
-            "name": "MASTER_VOLUME_TYPE",
-            "description": "The password used for the MYSQL_MASTER_USER",
-            "value": "ReadWriteMany"
-        },
-        {
-            "name": "SLAVE_VOLUME_SIZE",
-            "description": "The password used for the MYSQL_MASTER_USER",
             "value": "8Gi"
         },
         {
-            "name": "SLAVE_VOLUME_TYPE",
+            "name": "WP_VOLUME_TYPE",
             "description": "The password used for the MYSQL_MASTER_USER",
             "value": "ReadWriteMany"
         },
@@ -366,10 +346,33 @@
             }
         },
         {
+            "kind": "StorageClass",
+            "apiVersion": "storage.k8s.io/v1",
+            "metadata": {
+                "name": "nfs-statefulset",
+                "labels": {
+                    "app": "${APP_NAME}",
+                    "app-service": "${APP_NAME}-${WP_SVC}",
+                    "build": "${APP_NAME}-${WP_SVC}",
+                    "build1": "${APP_NAME}-${WP_SVC}",
+                    "deploy": "${APP_NAME}-${WP_SVC}"
+                }
+            },
+            "provisioner": "ctrl.srv.world",
+            "mountOptions": [
+                "hard",
+                "bg",
+                "_netdev"
+            ]
+        },
+        {
             "kind": "PersistentVolumeClaim",
             "apiVersion": "v1",
             "metadata": {
                 "name": "${APP_NAME}-master-data",
+                "annotations": {
+                    "volume.beta.kubernetes.io/storage-class": "nfs-statefulset"
+                },
                 "labels": {
                     "app": "${APP_NAME}",
                     "app-service": "${APP_NAME}-${WP_SVC}",
@@ -380,18 +383,18 @@
             },
             "spec": {
                 "accessModes": [
-                    "${MASTER_VOLUME_TYPE}"
+                    "${WP_VOLUME_TYPE}"
                 ],
                 "resources": {
                     "requests": {
-                        "storage": "${MASTER_VOLUME_SIZE}"
+                        "storage": "${WP_VOLUME_SIZE}"
                     }
                 }
             }
         },
         {
-            "kind": "DeploymentConfig",
-            "apiVersion": "v1",
+            "kind": "StatefulSet",
+            "apiVersion": "apps/v1",
             "metadata": {
                 "name": "${APP_NAME}-${MYSQL_SVC}-master",
                 "labels": {
@@ -413,9 +416,12 @@
                 ],
                 "replicas": 1,
                 "selector": {
-                    "app": "${APP_NAME}-master",
-                    "deployconfig": "${APP_NAME}-${MYSQL_SVC}-master"
+                    "matchLabels": {
+                        "app": "${APP_NAME}-master",
+                        "deployconfig": "${APP_NAME}-${MYSQL_SVC}-master"
+                    }
                 },
+                "serviceName": "${APP_NAME}-${MYSQL_SVC}-slave",
                 "template": {
                     "metadata": {
                         "labels": {
@@ -429,14 +435,6 @@
                             "runAsUser": "27",
                             "runAsGroup": "0"
                         },
-                        "volumes": [
-                            {
-                                "name": "${APP_NAME}-master-data",
-                                "persistentVolumeClaim": {
-                                    "claimName": "${APP_NAME}-master-data"
-                                }
-                            }
-                        ],
                         "containers": [
                             {
                                 "name": "${APP_NAME}-${MYSQL_SVC}-master",
@@ -526,36 +524,20 @@
                                 ],
                                 "volumeMounts": [
                                     {
-                                        "name": "${APP_NAME}-master-data",
-                                        "mountPath": "/var/lib/mysql/data"
+                                        "name": " web-master-data",
+                                        "mountPath": "/silo"
                                     }
                                 ]
                             }
+                        ],
+                        "volumes": [
+                            {
+                                "name": "web-master-data",
+                                "persistentVolumeClaim": {
+                                    "claimName": "${APP_NAME}-master-data"
+                                }
+                            }
                         ]
-                    }
-                }
-            }
-        },
-        {
-            "kind": "PersistentVolumeClaim",
-            "apiVersion": "v1",
-            "metadata": {
-                "name": "${APP_NAME}-slave-data",
-                "labels": {
-                    "app": "${APP_NAME}",
-                    "app-service": "${APP_NAME}-${WP_SVC}",
-                    "build": "${APP_NAME}-${WP_SVC}",
-                    "build1": "${APP_NAME}-${WP_SVC}",
-                    "deploy": "${APP_NAME}-${WP_SVC}"
-                }
-            },
-            "spec": {
-                "accessModes": [
-                    "${SLAVE_VOLUME_TYPE}"
-                ],
-                "resources": {
-                    "requests": {
-                        "storage": "${SLAVE_VOLUME_SIZE}"
                     }
                 }
             }
@@ -600,14 +582,6 @@
                             "runAsUser": "27",
                             "runAsGroup": "0"
                         },
-                        "volumes": [
-                            {
-                                "name": "${APP_NAME}-slave-data",
-                                "persistentVolumeClaim": {
-                                    "claimName": "${APP_NAME}-slave-data"
-                                }
-                            }
-                        ],
                         "containers": [
                             {
                                 "name": "${APP_NAME}-${MYSQL_SVC}-slave",
@@ -697,12 +671,6 @@
                                     {
                                         "name": "MYSQL_HOST",
                                         "value": "localhost"
-                                    }
-                                ],
-                                "volumeMounts": [
-                                    {
-                                        "name": "${APP_NAME}-slave-data",
-                                        "mountPath": "/var/lib/mysql/data"
                                     }
                                 ]
                             }
