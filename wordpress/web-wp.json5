@@ -152,6 +152,11 @@
       "name": "WP_DB_PORT_NUMBER",
       "description": "El puerto para comunicarse con la base de datos.",
       "value": "3306"
+    },
+     {
+      "name": "WP_INSTALL_VERSION",
+      "description": "Versión que se instala en el imagen. En blanco se instalará la \"latest\"",
+      "value": "latest"
     }
   ],
   "objects": [
@@ -183,7 +188,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "${APP_NAME}-${MYSQL_SVC}-img-0",
+        "name": "${APP_NAME}-${MYSQL_SVC}-bimg",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${MYSQL_SVC}",
@@ -195,7 +200,7 @@
       "kind": "BuildConfig",
       "apiVersion": "v1",
       "metadata": {
-        "name": "${APP_NAME}-${MYSQL_SVC}-img-0",
+        "name": "${APP_NAME}-${MYSQL_SVC}-bimg",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${MYSQL_SVC}",
@@ -208,7 +213,7 @@
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "${APP_NAME}-${MYSQL_SVC}-img-0:latest"
+            "name": "${APP_NAME}-${MYSQL_SVC}-bimg:latest"
           }
         },
         "postCommit": {
@@ -250,7 +255,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "${APP_NAME}-${MYSQL_SVC}-img-1",
+        "name": "${APP_NAME}-${MYSQL_SVC}-img",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${MYSQL_SVC}",
@@ -263,7 +268,7 @@
       "apiVersion": "build.openshift.io/v1",
       "kind": "BuildConfig",
       "metadata": {
-        "name": "${APP_NAME}-${MYSQL_SVC}-img-1",
+        "name": "${APP_NAME}-${MYSQL_SVC}-img",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${MYSQL_SVC}",
@@ -277,7 +282,7 @@
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "${APP_NAME}-${MYSQL_SVC}-img-1:latest"
+            "name": "${APP_NAME}-${MYSQL_SVC}-img:latest"
           }
         },
         "postCommit": {
@@ -299,7 +304,7 @@
             "from": {
               "kind": "ImageStreamTag",
               // "namespace": "${PROJECT_NAME}",
-              "name": "${APP_NAME}-${MYSQL_SVC}-img-0:latest"
+              "name": "${APP_NAME}-${MYSQL_SVC}-bimg:latest"
             },
             // "env": [ ]
           }
@@ -454,7 +459,7 @@
             "containers": [
             {
               "name": "${APP_NAME}-${MYSQL_SVC}-master",
-                "image": "${DOCKER_REGISTER}/${PROJECT_NAME}/${APP_NAME}-${MYSQL_SVC}-img-1:latest",
+                "image": "${DOCKER_REGISTER}/${PROJECT_NAME}/${APP_NAME}-${MYSQL_SVC}-img:latest",
                 "args": [
                   "run-mysqld-master"
                 ],
@@ -619,7 +624,7 @@
             "containers": [
               {
                 "name": "${APP_NAME}-${MYSQL_SVC}-slave",
-                "image": "${DOCKER_REGISTER}/${PROJECT_NAME}/${APP_NAME}-${MYSQL_SVC}-img-1:latest",
+                "image": "${DOCKER_REGISTER}/${PROJECT_NAME}/${APP_NAME}-${MYSQL_SVC}-img:latest",
                 "args": [
                   "run-mysqld-slave"
                 ],
@@ -714,7 +719,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "${APP_NAME}-${WP_SVC}-img-0",
+        "name": "${APP_NAME}-PHP-bimg",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${WP_SVC}",
@@ -726,7 +731,7 @@
       "apiVersion": "build.openshift.io/v1",
       "kind": "BuildConfig",
       "metadata": {
-        "name": "${APP_NAME}-${WP_SVC}-img-0",
+        "name": "${APP_NAME}-PHP-bimg",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${WP_SVC}",
@@ -739,7 +744,7 @@
         "output": {
           "to": { 
             "kind": "ImageStreamTag",
-            "name": "${APP_NAME}-${WP_SVC}-img-0:latest"
+            "name": "${APP_NAME}-PHP-bimg:latest"
           }
         },
         "postCommit": {
@@ -795,7 +800,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "${APP_NAME}-${WP_SVC}-img-1",
+        "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-bimg",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${WP_SVC}",
@@ -808,7 +813,7 @@
       "apiVersion": "build.openshift.io/v1",
       "kind": "BuildConfig",
       "metadata": {
-        "name": "${APP_NAME}-${WP_SVC}-img-1",
+        "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-bimg",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${WP_SVC}",
@@ -822,7 +827,7 @@
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "${APP_NAME}-${WP_SVC}-img-1:latest"
+            "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-bimg:latest"
           }
         },
         "postCommit": {
@@ -844,7 +849,7 @@
             "from": {
               "kind": "ImageStreamTag",
               "namespace": "${PROJECT_NAME}",
-              "name": "${APP_NAME}-${WP_SVC}-img-0:latest"
+              "name": "${APP_NAME}-PHP-bimg:latest"
             }
             // "env": [
             //   {
@@ -921,7 +926,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "${APP_NAME}-${WP_SVC}-img-2",
+        "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-img",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${WP_SVC}",
@@ -935,7 +940,7 @@
       "apiVersion": "build.openshift.io/v1",
       "kind": "BuildConfig",
       "metadata": {
-        "name": "${APP_NAME}-${WP_SVC}-img-2",
+        "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-img",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${WP_SVC}",
@@ -950,7 +955,7 @@
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "${APP_NAME}-${WP_SVC}-img-2:latest"
+            "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-img:latest"
           },
           "imageLabels": [
             // {
@@ -992,7 +997,7 @@
             "from": {
               "kind": "ImageStreamTag",
               "namespace": "${PROJECT_NAME}",
-              "name": "${APP_NAME}-${WP_SVC}-img-1:latest"
+              "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-bimg:latest"
             }
             // "env": [
             //   {
@@ -1131,7 +1136,7 @@
             "containers": [
               {
                 "name": "${APP_NAME}-${WP_SVC}",
-                "image": "${DOCKER_REGISTER}/${PROJECT_NAME}/${APP_NAME}-${WP_SVC}-img-1:latest",
+                "image": "${DOCKER_REGISTER}/${PROJECT_NAME}/${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-bimg:latest",
                 "ports": [
                   {
                     "containerPort": 8080,
