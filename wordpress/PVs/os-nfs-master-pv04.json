@@ -5,12 +5,12 @@
     "name": "web-master-data",
     "labels": {
       "app": "web",
-      "app-service": "web-app"
+      "app-service": "web-wp"
     }
   },
   "spec": {
     "capacity": {
-      "storage": "9Gi"
+      "storage": "8.4Gi"
     },
     "volumeMode": "Filesystem",
     "persistentVolumeReclaimPolicy": "Retain",
@@ -25,7 +25,7 @@
     ],
     "nfs": {
       "server": "ctrl.srv.world",
-      "path": "/var/nfs-data/pv02"
+      "path": "/var/nfs-data/pv04"
     }
   }
 }

@@ -4,7 +4,7 @@
   "metadata": {
     "name": "Web-Wordpress-Mysql",
     "annotations": {
-      "openshift.io/display-name": "Wordpress con mysql",
+      "openshift.io/display-name": "Wordpress con mysql8",
       "description": "Creamos la imagen mysql y de wordpress a partir de software collection. Después desplegamos.",
       "tags": "wordpress,mysql",
       "iconClass": "icon-wordpress"
@@ -34,7 +34,7 @@
     {
       "name": "WP_VOLUME_SIZE",
       "description": "The password used for the MYSQL_MASTER_USER",
-       "value": "10Gi"
+       "value": "8.3Gi"
      },
     {
       "name": "WP_VOLUME_TYPE",
@@ -44,7 +44,7 @@
      {
       "name": "MASTER_VOLUME_SIZE",
       "description": "The password used for the MYSQL_MASTER_USER",
-       "value": "9Gi"
+       "value": "8.4Gi"
      },
     {
       "name": "MASTER_VOLUME_TYPE",
@@ -54,7 +54,7 @@
     {
       "name": "SLAVE_VOLUME_SIZE",
       "description": "The password used for the MYSQL_MASTER_USER",
-       "value": "8Gi"
+       "value": "8.5Gi"
      },
     {
       "name": "SLAVE_VOLUME_TYPE",
@@ -82,7 +82,7 @@
     {
       "name": "SOURCE_REPOSITORY_MYSQL_TAG",
       "description": "The tagged version of the source repository to use.",
-      "value": "master",
+      "value": "dev",
       "required": true
     },
     {
@@ -96,7 +96,7 @@
       "description": "The tagged version of the source repository to use.",
       // "value": "#3_add_fpm_wpi_mysqlclient_silo",
       // "value": "#6_fix_assemble_s2i_bin",
-      "value": "master",
+      "value": "dev",
       // "value": "#5_change__paths_7.2_Dockerfile",
       "required": true
     },
@@ -153,10 +153,15 @@
       "description": "El puerto para comunicarse con la base de datos.",
       "value": "3306"
     },
-     {
-      "name": "WP_INSTALL_VERSION",
+    {
+      "name": "WP_INSTALL_VESION",
       "description": "Versión que se instala en el imagen. En blanco se instalará la \"latest\"",
-      "value": "latest"
+      "value": "5.2.4"
+    },
+     {
+      "name": "WP_INSTALL_VESION_TAG",
+      "description": "Versión que se instala en el imagen. En blanco se instalará la \"latest\"",
+      "value": "5x2x4"
     }
   ],
   "objects": [
@@ -348,10 +353,10 @@
           }
         ],
         "selector": {
-          "app": "${APP_NAME}-master",
+          "app": "${APP_NAME}",
           "deployconfig":  "${APP_NAME}-${MYSQL_SVC}-master"
         }
-      } 
+      }
     },
     {
       "kind": "Service",
@@ -376,7 +381,7 @@
           }
         ],
         "selector": {
-          "app": "${APP_NAME}-slave",
+          "app": "${APP_NAME}",
           "deployconfig":  "${APP_NAME}-${MYSQL_SVC}-slave"
         }
       } 
@@ -388,10 +393,10 @@
         "name": "${APP_NAME}-master-data",
         "labels": {
           "app": "${APP_NAME}",
-          "app-service": "${APP_NAME}-${WP_SVC}",
-          "build": "${APP_NAME}-${WP_SVC}",
-          "build1": "${APP_NAME}-${WP_SVC}",
-          "deploy": "${APP_NAME}-${WP_SVC}"
+          "app-service": "${APP_NAME}-${MYSQL_SVC}",
+          "build": "${APP_NAME}-${MYSQL_SVC}",
+          "build1": "${APP_NAME}-${MYSQL_SVC}",
+          "deploy": "${APP_NAME}-${MYSQL_SVC}"
         }
       },
       "spec": {
@@ -410,7 +415,6 @@
       "apiVersion": "v1",
       "metadata": {
         "name": "${APP_NAME}-${MYSQL_SVC}-master",
-        
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${MYSQL_SVC}",
@@ -431,31 +435,23 @@
         ],
         "replicas": 1,
         "selector": {
-          "app": "${APP_NAME}-master",
+          "app": "${APP_NAME}",
           "deployconfig":  "${APP_NAME}-${MYSQL_SVC}-master"
         },
         "template": {
           "metadata": {
             "labels": {
-              "app": "${APP_NAME}-master",
+              "app": "${APP_NAME}",
               "deployconfig":  "${APP_NAME}-${MYSQL_SVC}-master"
             }
           },
           "spec": {
             // "serviceAccountName": "default",
-            "securityContext": {
-              "fsGroup": "0",
-              "runAsUser": "27",
-              "runAsGroup": "0"
-            },
-            "volumes": [
-              {
-                "name": "${APP_NAME}-master-data",
-                "persistentVolumeClaim": {
-                  "claimName":  "${APP_NAME}-master-data"
-                }
-              }
-            ],
+            // "securityContext": {
+            //   "fsGroup": "0",
+            //   "runAsUser": "27",
+            //   "runAsGroup": "0"
+            // },
             "containers": [
             {
               "name": "${APP_NAME}-${MYSQL_SVC}-master",
@@ -477,7 +473,7 @@
                 "livenessProbe": {
                   "exec":{
                     "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb --host=${HOSTNAME}" ]
-                    
+                    // "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin ping" ]
                   },
                   "initialDelaySeconds": 20,
                   "periodSeconds": 20,
@@ -486,6 +482,7 @@
                 "startupProbe": {
                   "exec": {
                     "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb  --host=${HOSTNAME}" ]
+                    // "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin ping" ]
                   },
                   "successThreshold": 1,
                   "failureThreshold": 30, 
@@ -493,8 +490,9 @@
                 },
                 "readinessProbe": {
                   "exec":{
-                    // "command": [ "mysqladmin status --user=root --host=$(hostname) --password=$MYSQL_ROOT_PASSWORD" ]
                     "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb  --host=${HOSTNAME}" ]
+                    // "command": [ "mysqladmin status --user=root --host=$(hostname) --password=$MYSQL_ROOT_PASSWORD" ]
+                    // "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb  --host=${HOSTNAME}" ]
                   },
                   "initialDelaySeconds": 20,
                   "periodSeconds": 10,
@@ -537,9 +535,17 @@
                 "volumeMounts": [
                   {
                     "name": "${APP_NAME}-master-data",
-                    "mountPath": "/var/lib/mysql/data"
+                    "mountPath": "/silo"
                   }
                 ]
+              }
+            ],
+             "volumes": [
+              {
+                "name": "${APP_NAME}-master-data",
+                "persistentVolumeClaim": {
+                  "claimName":  "${APP_NAME}-master-data"
+                }
               }
             ]
           }
@@ -553,10 +559,10 @@
         "name": "${APP_NAME}-slave-data",
         "labels": {
           "app": "${APP_NAME}",
-          "app-service": "${APP_NAME}-${WP_SVC}",
-          "build": "${APP_NAME}-${WP_SVC}",
-          "build1": "${APP_NAME}-${WP_SVC}",
-          "deploy": "${APP_NAME}-${WP_SVC}"
+          "app-service": "${APP_NAME}-${MYSQL_SVC}",
+          "build": "${APP_NAME}-${MYSQL_SVC}",
+          "build1": "${APP_NAME}-${MYSQL_SVC}",
+          "deploy": "${APP_NAME}-${MYSQL_SVC}"
         }
       },
       "spec": {
@@ -596,31 +602,23 @@
         ],
         "replicas": 1,
         "selector": {
-          "app": "${APP_NAME}-slave",
+          "app": "${APP_NAME}",
           "deployconfig":  "${APP_NAME}-${MYSQL_SVC}-slave"
         },
         "template": {
           "metadata": {
             "labels": {
-              "app": "${APP_NAME}-slave",
+              "app": "${APP_NAME}",
               "deployconfig":  "${APP_NAME}-${MYSQL_SVC}-slave"
             }
           },
           "spec": {
             // "serviceAccountName": "default",
-            "securityContext": {
-              "fsGroup": "0",
-              "runAsUser": "27",
-              "runAsGroup": "0"
-            },
-            "volumes": [
-              {
-                "name": "${APP_NAME}-slave-data",
-                "persistentVolumeClaim": {
-                  "claimName":  "${APP_NAME}-slave-data"
-                }
-              }
-            ],
+            // "securityContext": {
+            //   "fsGroup": "0",
+            //   "runAsUser": "27",
+            //   "runAsGroup": "0"
+            // },
             "containers": [
               {
                 "name": "${APP_NAME}-${MYSQL_SVC}-slave",
@@ -642,7 +640,7 @@
                 "livenessProbe": {
                   "exec":{
                     "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb --host=${HOSTNAME}" ]
-                    
+                   // "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin ping" ]
                   },
                   "initialDelaySeconds": 20,
                   "periodSeconds": 20,
@@ -651,6 +649,7 @@
                 "startupProbe": {
                   "exec": {
                     "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb  --host=${HOSTNAME}" ]
+                    // "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin ping" ]
                   },
                   "successThreshold": 1,
                   "failureThreshold": 30, 
@@ -660,6 +659,7 @@
                   "exec":{
                     // "command": [ "mysqladmin status --user=root --host=$(hostname) --password=$MYSQL_ROOT_PASSWORD" ]
                     "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb  --host=${HOSTNAME}" ]
+                    // "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin ping" ]
                   },
                   "initialDelaySeconds": 20,
                   "periodSeconds": 10,
@@ -706,9 +706,17 @@
                 "volumeMounts": [
                   {
                     "name": "${APP_NAME}-slave-data",
-                    "mountPath": "/var/lib/mysql/data"
+                    "mountPath": "/silo"
                   }
                 ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "${APP_NAME}-slave-data",
+                "persistentVolumeClaim": {
+                  "claimName": "${APP_NAME}-slave-data"
+                }
               }
             ]
           }
@@ -719,7 +727,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "${APP_NAME}-PHP-bimg",
+        "name": "${APP_NAME}-php-bimg",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${WP_SVC}",
@@ -731,7 +739,7 @@
       "apiVersion": "build.openshift.io/v1",
       "kind": "BuildConfig",
       "metadata": {
-        "name": "${APP_NAME}-PHP-bimg",
+        "name": "${APP_NAME}-php-bimg",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${WP_SVC}",
@@ -744,7 +752,7 @@
         "output": {
           "to": { 
             "kind": "ImageStreamTag",
-            "name": "${APP_NAME}-PHP-bimg:latest"
+            "name": "${APP_NAME}-php-bimg:latest"
           }
         },
         "postCommit": {
@@ -800,7 +808,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-bimg",
+        "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VESION_TAG}-bimg",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${WP_SVC}",
@@ -813,7 +821,7 @@
       "apiVersion": "build.openshift.io/v1",
       "kind": "BuildConfig",
       "metadata": {
-        "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-bimg",
+        "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VESION_TAG}-bimg",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${WP_SVC}",
@@ -827,7 +835,7 @@
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-bimg:latest"
+            "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VESION_TAG}-bimg:latest"
           }
         },
         "postCommit": {
@@ -849,7 +857,7 @@
             "from": {
               "kind": "ImageStreamTag",
               "namespace": "${PROJECT_NAME}",
-              "name": "${APP_NAME}-PHP-bimg:latest"
+              "name": "${APP_NAME}-php-bimg:latest"
             }
             // "env": [
             //   {
@@ -926,7 +934,7 @@
       "kind": "ImageStream",
       "apiVersion": "v1",
       "metadata": {
-        "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-img",
+        "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VESION_TAG}-img",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${WP_SVC}",
@@ -940,7 +948,7 @@
       "apiVersion": "build.openshift.io/v1",
       "kind": "BuildConfig",
       "metadata": {
-        "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-img",
+        "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VESION_TAG}-img",
         "labels": {
           "app": "${APP_NAME}",
           "app-service": "${APP_NAME}-${WP_SVC}",
@@ -955,7 +963,7 @@
         "output": {
           "to": {
             "kind": "ImageStreamTag",
-            "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-img:latest"
+            "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VESION_TAG}-img:latest"
           },
           "imageLabels": [
             // {
@@ -997,7 +1005,7 @@
             "from": {
               "kind": "ImageStreamTag",
               "namespace": "${PROJECT_NAME}",
-              "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-bimg:latest"
+              "name": "${APP_NAME}-${WP_SVC}-${WP_INSTALL_VESION_TAG}-bimg:latest"
             }
             // "env": [
             //   {
@@ -1120,23 +1128,15 @@
           },
           "spec": {
             // "serviceAccountName": "default",
-            "securityContext": {
-              "fsGroup": "0",
-              "runAsUser": "1001",
-              "runAsGroup": "0"
-            },
-            "volumes": [
-              {
-                "name": "${APP_NAME}-${WP_SVC}-data",
-                "persistentVolumeClaim": {
-                  "claimName":  "${APP_NAME}-${WP_SVC}-data"
-                }
-              }
-            ],
+            // "securityContext": {
+            //   "fsGroup": "0",
+            //   "runAsUser": "1001",
+            //   "runAsGroup": "0"
+            // },
             "containers": [
               {
                 "name": "${APP_NAME}-${WP_SVC}",
-                "image": "${DOCKER_REGISTER}/${PROJECT_NAME}/${APP_NAME}-${WP_SVC}-${WP_INSTALL_VERSION}-bimg:latest",
+                "image": "${DOCKER_REGISTER}/${PROJECT_NAME}/${APP_NAME}-${WP_SVC}-${WP_INSTALL_VESION_TAG}-bimg:latest",
                 "ports": [
                   {
                     "containerPort": 8080,
@@ -1211,6 +1211,14 @@
                   }
                 ]
               } 
+            ],
+             "volumes": [
+              {
+                "name": "${APP_NAME}-${WP_SVC}-data",
+                "persistentVolumeClaim": {
+                  "claimName":  "${APP_NAME}-${WP_SVC}-data"
+                }
+              }
             ],
             "dnsPolicy": "ClusterFirst",
             "restartPolicy": "Always",

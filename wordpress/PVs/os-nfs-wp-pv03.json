@@ -5,16 +5,12 @@
     "name": "web-wp-data",
     "labels": {
       "app": "web",
-      "app-service": "web-app"
+      "app-service": "web-wp"
     }
   },
   "spec": {
     "capacity": {
-<<<<<<< HEAD
-      "storage": "10Gi"
-=======
-      "storage": "8Gi"
->>>>>>> ec0ff51f4e8fd4d6e6ce2fb89432af56fda8cd44
+      "storage": "8.3Gi"
     },
     "volumeMode": "Filesystem",
     "persistentVolumeReclaimPolicy": "Retain",
@@ -29,7 +25,7 @@
     ],
     "nfs": {
       "server": "ctrl.srv.world",
-      "path": "/var/nfs-data/pv01"
+      "path": "/var/nfs-data/pv03"
     }
   }
 }
