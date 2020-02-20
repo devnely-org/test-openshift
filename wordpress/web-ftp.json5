@@ -1,0 +1,253 @@
+{
+  "kind": "Template",
+  "apiVersion": "v1",
+  "metadata": {
+    "name": "Web-ftp-servidorl",
+    "annotations": {
+      "openshift.io/display-name": "Servidor Pureftp",
+      "description": "Servidor Pureftp.",
+      "tags": "pureftp,ftp",
+      "iconClass": "icon-ftp"
+    },
+    "labels":{
+      "template": "pure-ftp"
+    }
+  },
+  "parameters": [
+    {
+      "name": "APP_NAME",
+      "description": "Nombre de la aplicación.",
+      "value": "web"
+    },
+    {
+      "name": "FTP_SVC",
+      "description": "Servicio de wordpress.",
+      "value": "ftp",
+      "required": true
+    },
+    {
+      "name": "WP_VOLUME_SIZE",
+      "description": "The password used for the MYSQL_MASTER_USER",
+       "value": "8.3Gi"
+     },
+    {
+      "name": "WP_VOLUME_TYPE",
+      "description": "The password used for the MYSQL_MASTER_USER",
+       "value": "ReadWriteMany"
+    },
+    { "name": "FTP_USER_NAME",
+      "description": "The password for the database user.",
+      "value": "userftp"
+    },
+    {
+      "name": "FTP_USER_PASS",
+      "description": "Nombre del proyecto openshift para poder acceder a su registro de imágenes de docker.",
+      "value": "passuserftp"
+    },
+     { "name": "FTP_USER_HOME",
+      "description": "The password for the database user.",
+      "value": "/silo"
+    },
+    {
+      "name": "FTP_USER_UID",
+      "description": "Nombre del proyecto openshift para poder acceder a su registro de imágenes de docker.",
+      "value": "1000"
+    },
+     {
+      "name": "FTP_USER_GID",
+      "description": "Nombre del proyecto openshift para poder acceder a su registro de imágenes de docker.",
+      "value": "1000"
+     },
+    {
+      "name": "FTP_USER_HOME_PERMISSION",
+      "description": "Nombre del proyecto openshift para poder acceder a su registro de imágenes de docker.",
+      "value": "777"
+    },
+    {
+      "name": "PUBLICHOST",
+      "description": "Nombre del proyecto openshift para poder acceder a su registro de imágenes de docker.",
+      "value": "web-ftp"
+    },
+
+    
+  ],
+  "objects": [
+    {
+      "kind": "Service",
+      "apiVersion": "v1",
+      "metadata": {
+        "name":  "${APP_NAME}-${FTP_SVC}",
+        "labels": {
+          "app": "${APP_NAME}",
+          "app-service": "${APP_NAME}-${FTP_SVC}",
+          "build": "${APP_NAME}-${FTP_SVC}",
+          "build1": "${APP_NAME}-${FTP_SVC}",
+          "deploy": "${APP_NAME}-${FTP_SVC}"
+        }
+      },
+      "spec": {
+        "clusterIP": "None", 
+         // "externalIPs": [
+         //  "192.168.1.9"
+         // ],
+         "ports": [
+           {
+            "name": "ftp",
+            "protocol": "TCP",
+            "port": 21,
+            "targetPort": 21
+          },
+          {
+            "name": "ftp-pasive",
+            "protocol": "TCP",
+            "port": 30000,
+            "targetPort": 30000
+          }
+        ],
+        "selector": {
+          "app": "${APP_NAME}",
+          "deployconfig": "${APP_NAME}-${FTP_SVC}" 
+        }
+      }
+    },
+    {
+      "kind": "DeploymentConfig",
+      "apiVersion": "v1",
+      "metadata": {
+        "name":  "${APP_NAME}-${FTP_SVC}",
+        "labels": {
+          "app": "${APP_NAME}",
+          "app-service": "${APP_NAME}-${FTP_SVC}",
+          "build": "${APP_NAME}-${FTP_SVC}",
+          "build1": "${APP_NAME}-${FTP_SVC}",
+          "deploy": "${APP_NAME}-${FTP_SVC}"
+        }
+      },
+      "spec": {
+        "strategy": {
+          "type": "Rolling"
+          //"type": "Recreate"
+        },
+        "triggers": [
+          {
+            "type": "ConfigChange"
+          }
+        ],
+        "replicas": 1,
+        "selector": {
+          "app": "${APP_NAME}",
+          "deployconfig":  "${APP_NAME}-${FTP_SVC}"
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "${APP_NAME}",
+              "deployconfig":  "${APP_NAME}-${FTP_SVC}"
+            }
+          },
+          "spec": {
+            // "serviceAccountName": "default",
+            // "securityContext": {
+            //   "fsGroup": "0",
+            //   "runAsUser": "1001",
+            //   "runAsGroup": "0"
+            // },
+            "containers": [
+              {
+                "name": "${APP_NAME}-${FTP_SVC}",
+                "image": "docker.io/stilliard/pure-ftpd:latest",
+                "ports": [
+                  {
+                    "containerPort": 21,
+                    "protocol": "TCP"
+                  },
+                  {
+                    "containerPort": 30000,
+                    "protocol": "TCP"
+                  }
+                ],
+                "resources": {
+                  "limits": {
+                    "memory": "512Mi"
+                  }
+                },
+                // "livenessProbe": {
+                //   "exec":{
+                //     "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb --host=${HOSTNAME}" ]
+                //   },
+                //   "initialDelaySeconds": 20,
+                //   "periodSeconds": 20,
+                //   "failureThreshold": 30
+                // },
+                // "startupProbe": {
+                //   "exec": {
+                //     "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb  --host=${HOSTNAME}" ]
+                //   },
+                //   "successThreshold": 1,
+                //   "failureThreshold": 30, 
+                //   "periodSeconds": 10
+                // },
+                // "readinessProbe": {
+                //   "exec":{
+                //     // "command": [ "mysqladmin status --user=root --host=$(hostname) --password=$MYSQL_ROOT_PASSWORD" ]
+                //     "command": [ "/usr/bin/sh", "-i", "-c","MYSQL_PWD=\"$MYSQL_PASSWORD\" mysqladmin status --user=userdb  --host=${HOSTNAME}" ]
+                //   },
+                //   "initialDelaySeconds": 20,
+                //   "periodSeconds": 10,
+                //   "failureThreshold": 1
+                // },
+                "env": [
+                  {
+                    "name": "FTP_USER_NAME",
+                    "value": "${FTP_USER_NAME}"
+                  },
+                  {
+                    "name": "FTP_USER_PASS",
+                    "value": "${FTP_USER_PASS}"
+                  },
+                  {
+                    "name": "FTP_USER_HOME",
+                    "value": "${FTP_USER_HOME}"
+                  },
+                  {
+                    "name": "FTP_USER_UID",
+                    "value": "${FTP_USER_UID}"
+                  },
+                  {
+                    "name": "FTP_USER_GID",
+                    "value": "${FTP_USER_GID}"
+                  },
+                  {
+                    "name": "FTP_USER_HOME_PERMISSION",
+                    "value": "${FTP_USER_HOME_PERMISSION}"
+                  }
+                  // {
+                  //   "name": "PUBLICHOST",
+                  //   "value": "${PUBLICHOST}"
+                  //}
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "${APP_NAME}-${WP_SVC}-data",
+                    "mountPath": "/silo"
+                  }
+                ]
+              } 
+            ],
+             "volumes": [
+              {
+                "name": "${APP_NAME}-${WP_SVC}-data",
+                "persistentVolumeClaim": {
+                  "claimName":  "${APP_NAME}-${WP_SVC}-data"
+                }
+              }
+            ],
+            "dnsPolicy": "ClusterFirst",
+            "restartPolicy": "Always",
+            "terminationGracePeriodSeconds": "30"
+          }
+        }
+      }
+    }
+  ]
+}

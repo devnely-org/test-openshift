@@ -964,7 +964,7 @@
                 }
             },
             "spec": {
-                "clusterIP": "None",
+                "type": "LoadBalancer",
                 "ports": [
                     {
                         "name": "8080-tcp",

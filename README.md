@@ -45,6 +45,15 @@ $ oc process -f wordpress/build/web-wp.json  | oc apply  -f -
 ```
    
    
+   
+```
+$ oc delete -f wordpress/PVs/os-nfs-wp-pv03.json -f wordpress/PVs/os-nfs-master-pv04.json -f wordpress/PVs/os-nfs-slave-pv05.json
+$ oc process -f wordpress/build/web-wp.json  | oc delete  -f - 
+$ oc apply -f wordpress/PVs/os-nfs-wp-pv03.json -f wordpress/PVs/os-nfs-master-pv04.json -f wordpress/PVs/os-nfs-slave-pv05.json
+$ oc process -f wordpress/build/web-wp.json  | oc apply  -f - && oc expose dc web-wp  --type=LoadBalancer --name=web-wp
+
+```
+   
 # Contributing
 
 In principle it is a personal and public project.

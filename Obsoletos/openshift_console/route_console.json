@@ -1,0 +1,34 @@
+{
+    "apiVersion": "route.openshift.io/v1",
+    "kind": "Route",
+    "metadata": {
+        "annotations": {
+            "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"route.openshift.io/v1\",\"kind\":\"Route\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"openshift-console\"},\"name\":\"console\",\"namespace\":\"openshift-console\"},\"spec\":{\"host\":\"console.apps.srv.world\",\"port\":{\"targetPort\":\"https\"},\"tls\":{\"caCertificate\":\"\",\"certificate\":\"\",\"insecureEdgeTerminationPolicy\":\"Redirect\",\"key\":\"\",\"termination\":\"reencrypt\"},\"to\":{\"kind\":\"Service\",\"name\":\"console\"}}}\n"
+        },
+        "creationTimestamp": null,
+        "labels": {
+            "app": "openshift-console"
+        },
+        "name": "console",
+        "selfLink": "/apis/route.openshift.io/v1/namespaces/openshift-console/routes/console"
+    },
+    "spec": {
+        "host": "console.apps.srv.world",
+        "port": {
+            "targetPort": "https"
+        },
+        "tls": {
+            "insecureEdgeTerminationPolicy": "Redirect",
+            "termination": "reencrypt"
+        },
+        "to": {
+            "kind": "Service",
+            "name": "console",
+            "weight": 100
+        },
+        "wildcardPolicy": "None"
+    },
+    "status": {
+        "ingress": null
+    }
+}
